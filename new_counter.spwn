@@ -1,0 +1,239 @@
+extract obj_props
+
+item_edit = (){
+ return trigger {
+  1: 3619, // Item edit trigger id
+  80: 0, // item id 1
+  95: 0, // item id 2
+  51: 0, // target item id
+  476: 0, // item type 1
+  477: 0, // item type 2
+  478: 1, // target item type
+  479: 1.0, // mod
+  480: 0, // assign op [0, 4] = + - * /
+  481: 1, // op 1 [1, 4] + - * /
+  482: 3, // op 2 [3, 4] * /
+  578: 0, // none/abs/neg 1
+  579: 0, // none/abs/neg 1
+  485: 0, // none/round/floor/ceil 1
+  486: 0, // none/round/floor/ceil 1
+ }
+}
+
+impl @trigger {
+ with: (self, key: @object_key | @number, value) -> @trigger {
+  return match key {
+   @object_key: (){
+  		let new_obj = self
+  		$.edit_obj(new_obj, key, value)
+  		return new_obj
+   }(),
+   @number: (){
+  		let new_obj = self
+  		$.edit_obj(new_obj, key, value)
+  		return new_obj
+   }()
+  }
+	},
+}
+
+type @new_counter
+
+impl @new_counter {
+ new: (source: @number | @item = 0) -> @new_counter {
+   return match source {
+    @number: (){
+     id = ?i
+     let out = @new_counter::{
+      item: id
+     }
+     if source != 0 {
+      out = source
+     }
+     return out
+    }(),
+    @item: (){
+     return @new_counter::{
+      item: source
+     }
+    }()
+   }
+ }
+}
+
+impl @new_counter {
+ display: (self, x: @number = 90, y: @number = 90)-> @NULL{
+  $.add(obj {
+   OBJ_ID: 1615,
+   X: x,
+   Y: y,
+   ITEM: self.item,
+  });
+ },
+ 
+ _assign_: (self, other: @number | @new_counter) -> @NULL {
+  match other {
+   @number: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 0).with(479, other)
+    )
+   }(),
+   @new_counter: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 0).with(479, 1).with(80, other.item).with(476, 1)
+    )
+   }(),
+  }
+ },
+ 
+ _add_: (self, other: @number | @new_counter) -> @NULL{
+  match other {
+   @number: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 1).with(479, other)
+    )
+   }(),
+   @new_counter: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 1).with(479, 1).with(80, other.item).with(476, 1)
+    )
+   }(),
+  }
+ },
+ 
+_subtract_: (self, other: @number | @new_counter) -> @NULL{
+  match other {
+   @number: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 2).with(479, other)
+    )
+   }(),
+   @new_counter: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 2).with(479, 1).with(80, other.item).with(476, 1)
+    )
+   }(),
+  }
+ },
+ 
+_multiply_: (self, other: @number | @new_counter) -> @NULL{
+  match other {
+   @number: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 3).with(479, other)
+    )
+   }(),
+   @new_counter: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 3).with(479, 1).with(80, other.item).with(476, 1)
+    )
+   }(),
+  }
+ },
+ 
+_divide_: (self, other: @number | @new_counter) -> @NULL{
+  match other {
+   @number: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 4).with(479, other)
+    )
+   }(),
+   @new_counter: (){
+    $.add(
+     item_edit().with(51, self.item).with(480, 4).with(479, 1).with(80, other.item).with(476, 1)
+    )
+   }(),
+  }
+ },
+ 
+_plus_: (self, other: @number | @new_counter) -> @new_counter{
+  return match other {
+   @number: (){
+    result = @new_counter::new()
+    additional_counter = @new_counter::new(other) // item edit trigger cannot do i5 = i2 + 666 for some reason
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1)
+    )
+    return result
+   }(),
+   @new_counter: (){
+    result = @new_counter::new()
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1)
+    )
+    return result
+   }(),
+  }
+ },
+ 
+_minus_: (self, other: @number | @new_counter) -> @new_counter{
+  return match other {
+   @number: (){
+    result = @new_counter::new()
+    additional_counter = @new_counter::new(other) // item edit trigger cannot do i5 = i2 - 666 for some reason
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1).with(481, 2)
+    )
+    return result
+   }(),
+   @new_counter: (){
+    result = @new_counter::new()
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1).with(481, 2)
+    )
+    return result
+   }(),
+  }
+ },
+ 
+_times_: (self, other: @number | @new_counter) -> @new_counter{
+  return match other {
+   @number: (){
+    result = @new_counter::new()
+    additional_counter = @new_counter::new(other)
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1).with(481, 3)
+    )
+    return result
+   }(),
+   @new_counter: (){
+    result = @new_counter::new()
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1).with(481, 3)
+    )
+    return result
+   }(),
+  }
+ },
+ 
+_divided_by_: (self, other: @number | @new_counter) -> @new_counter{
+  return match other {
+   @number: (){
+    result = @new_counter::new()
+    additional_counter = @new_counter::new(other) // item edit trigger cannot do i5 = i2 + 666 for some reason
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1).with(481, 4)
+    )
+    return result
+   }(),
+   @new_counter: (){
+    result = @new_counter::new()
+    $.add(
+     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1).with(481, 4)
+    )
+    return result
+   }(),
+  }
+ },
+
+_increment_: (self) -> @NULL{
+  self += 1
+ },
+ 
+_decrement_: (self) -> @NULL{
+  self -= 1
+ },
+ 
+}
+
+return @new_counter::new

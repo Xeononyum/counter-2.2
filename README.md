@@ -27,4 +27,4 @@ if second argument is true, it will use time counter instead of item
 
 if one of operands in +, -, *, / operators is time counter or float number, result will be too time counter
 
-time counter only means that it can contain float values
+time counter only means that it can contain float values and also separated from items

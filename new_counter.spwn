@@ -43,7 +43,7 @@ impl @trigger {
 type @new_counter
 
 impl @new_counter {
- new: (source: @number | @item = 0, is_time: @bool) -> @new_counter {
+ new: (source: @number | @item = 0, is_time: @bool = false) -> @new_counter {
    return match source {
     @number: (){
      id = ?i
@@ -189,7 +189,7 @@ impl @new_counter {
    @new_counter: (){
     result = @new_counter::new(is_time = self.is_time || other.is_time)
     $.add(
-     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, other.item).with(476, self.get_type()).with(477, other.tyle).with(481, 2)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, other.item).with(476, self.get_type()).with(477, other.get_type()).with(481, 2)
     )
     return result
    }(),

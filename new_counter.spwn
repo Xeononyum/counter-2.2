@@ -1,5 +1,6 @@
 extract obj_props
 
+
 item_edit = (){
  return trigger {
   1: 3619, // Item edit trigger id
@@ -19,6 +20,8 @@ item_edit = (){
   486: 0, // none/round/floor/ceil 1
  }
 }
+
+is_integer = (num: @number){return (num % 1) == 0}
 
 impl @trigger {
  with: (self, key: @object_key | @number, value) -> @trigger {
@@ -40,12 +43,13 @@ impl @trigger {
 type @new_counter
 
 impl @new_counter {
- new: (source: @number | @item = 0) -> @new_counter {
+ new: (source: @number | @item = 0, is_time: @bool) -> @new_counter {
    return match source {
     @number: (){
      id = ?i
      let out = @new_counter::{
-      item: id
+      item: id,
+      is_time: is_time,
      }
      if source != 0 {
       out = source
@@ -54,7 +58,8 @@ impl @new_counter {
     }(),
     @item: (){
      return @new_counter::{
-      item: source
+      item: source,
+      is_time: is_time,
      }
     }()
    }
@@ -68,19 +73,24 @@ impl @new_counter {
    X: x,
    Y: y,
    ITEM: self.item,
+   466: self.is_time,
   });
+ },
+ 
+ get_type: (self) -> @number {
+  return (self.is_time as @number) + 1
  },
  
  _assign_: (self, other: @number | @new_counter) -> @NULL {
   match other {
    @number: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 0).with(479, other)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 0).with(479, other)
     )
    }(),
    @new_counter: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 0).with(479, 1).with(80, other.item).with(476, 1)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 0).with(479, 1).with(80, other.item).with(476, other.get_type())
     )
    }(),
   }
@@ -90,147 +100,147 @@ impl @new_counter {
   match other {
    @number: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 1).with(479, other)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 1).with(479, other)
     )
    }(),
    @new_counter: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 1).with(479, 1).with(80, other.item).with(476, 1)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 1).with(479, 1).with(80, other.item).with(476, other.get_type())
     )
    }(),
   }
  },
  
-_subtract_: (self, other: @number | @new_counter) -> @NULL{
+ _subtract_: (self, other: @number | @new_counter) -> @NULL{
   match other {
    @number: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 2).with(479, other)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 2).with(479, other)
     )
    }(),
    @new_counter: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 2).with(479, 1).with(80, other.item).with(476, 1)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 2).with(479, 1).with(80, other.item).with(476, other.get_type())
     )
    }(),
   }
  },
  
-_multiply_: (self, other: @number | @new_counter) -> @NULL{
+ _multiply_: (self, other: @number | @new_counter) -> @NULL{
   match other {
    @number: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 3).with(479, other)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 3).with(479, other)
     )
    }(),
    @new_counter: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 3).with(479, 1).with(80, other.item).with(476, 1)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 3).with(479, 1).with(80, other.item).with(476, other.get_type())
     )
    }(),
   }
  },
  
-_divide_: (self, other: @number | @new_counter) -> @NULL{
+ _divide_: (self, other: @number | @new_counter) -> @NULL{
   match other {
    @number: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 4).with(479, other)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 4).with(479, other)
     )
    }(),
    @new_counter: (){
     $.add(
-     item_edit().with(51, self.item).with(480, 4).with(479, 1).with(80, other.item).with(476, 1)
+     item_edit().with(478, self.get_type()).with(51, self.item).with(480, 4).with(479, 1).with(80, other.item).with(476, other.get_type())
     )
    }(),
   }
  },
  
-_plus_: (self, other: @number | @new_counter) -> @new_counter{
+ _plus_: (self, other: @number | @new_counter) -> @new_counter{
   return match other {
    @number: (){
-    result = @new_counter::new()
-    additional_counter = @new_counter::new(other) // item edit trigger cannot do i5 = i2 + 666 for some reason
+    result = @new_counter::new(is_time = self.is_time || !is_integer(other))
+    additional_counter = @new_counter::new(other, true) // item edit trigger cannot do i5 = i2 + 666 for some reason
     $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, self.get_type()).with(477, additional_counter.get_type())
     )
     return result
    }(),
    @new_counter: (){
-    result = @new_counter::new()
+    result = @new_counter::new(is_time = self.is_time || other.is_time)
     $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1)
-    )
-    return result
-   }(),
-  }
- },
- 
-_minus_: (self, other: @number | @new_counter) -> @new_counter{
-  return match other {
-   @number: (){
-    result = @new_counter::new()
-    additional_counter = @new_counter::new(other) // item edit trigger cannot do i5 = i2 - 666 for some reason
-    $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1).with(481, 2)
-    )
-    return result
-   }(),
-   @new_counter: (){
-    result = @new_counter::new()
-    $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1).with(481, 2)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, other.item).with(476, self.get_type()).with(477, other.get_type())
     )
     return result
    }(),
   }
  },
  
-_times_: (self, other: @number | @new_counter) -> @new_counter{
+ _minus_: (self, other: @number | @new_counter) -> @new_counter{
   return match other {
    @number: (){
-    result = @new_counter::new()
-    additional_counter = @new_counter::new(other)
+    result = @new_counter::new(is_time = self.is_time || !is_integer(other))
+    additional_counter = @new_counter::new(other, true) // item edit trigger cannot do i5 = i2 - 666 for some reason
     $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1).with(481, 3)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, self.tyle).with(477, additional_counter.get_type()).with(481, 2)
     )
     return result
    }(),
    @new_counter: (){
-    result = @new_counter::new()
+    result = @new_counter::new(is_time = self.is_time || other.is_time)
     $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1).with(481, 3)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, other.item).with(476, self.get_type()).with(477, other.tyle).with(481, 2)
     )
     return result
    }(),
   }
  },
  
-_divided_by_: (self, other: @number | @new_counter) -> @new_counter{
+ _times_: (self, other: @number | @new_counter) -> @new_counter{
   return match other {
    @number: (){
-    result = @new_counter::new()
-    additional_counter = @new_counter::new(other) // item edit trigger cannot do i5 = i2 + 666 for some reason
+    result = @new_counter::new(is_time = self.is_time || !is_integer(other))
+    additional_counter = @new_counter::new(other, true)
     $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, 1).with(477, 1).with(481, 4)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, self.get_type()).with(477, additional_counter.get_type()).with(481, 3)
     )
     return result
    }(),
    @new_counter: (){
-    result = @new_counter::new()
+    result = @new_counter::new(is_time = self.is_time || other.is_time)
     $.add(
-     item_edit().with(51, result.item).with(80, self.item).with(95, other.item).with(476, 1).with(477, 1).with(481, 4)
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, other.item).with(476, self.get_type()).with(477, other.get_type()).with(481, 3)
+    )
+    return result
+   }(),
+  }
+ },
+ 
+ _divided_by_: (self, other: @number | @new_counter) -> @new_counter{
+  return match other {
+   @number: (){
+    result = @new_counter::new(is_time = self.is_time || !is_integer(other))
+    additional_counter = @new_counter::new(other, true) // item edit trigger cannot do i5 = i2 + 666 for some reason
+    $.add(
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, additional_counter.item).with(476, self.get_type()).with(477, additional_counter.get_type()).with(481, 4)
+    )
+    return result
+   }(),
+   @new_counter: (){
+    result = @new_counter::new(is_time = self.is_time || other.is_time)
+    $.add(
+     item_edit().with(478, result.get_type()).with(51, result.item).with(80, self.item).with(95, other.item).with(476, self.get_type()).with(477, other.get_type()).with(481, 4)
     )
     return result
    }(),
   }
  },
 
-_increment_: (self) -> @NULL{
+ _increment_: (self) -> @NULL{
   self += 1
  },
  
-_decrement_: (self) -> @NULL{
+ _decrement_: (self) -> @NULL{
   self -= 1
  },
  

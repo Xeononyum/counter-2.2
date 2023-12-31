@@ -39,7 +39,7 @@ Actually only aviable operators are `++, --, +=, -=, *=, /=, +, -, /, *`, and al
 
 Note: time and item not intersected, so if u have `new_counter(3i, false)` it wont be equal to `new_counter(3i, true)`
 
-operators `+, -, *, /`` returns time counter if one of provided arguments are float number or time counter:
+operators `+, -, *, /` returns time counter if one of provided arguments are float number or time counter:
 ```spwn
  my_counter = new_counter(77, false) * 3.5
  my_counter.is_time // true
